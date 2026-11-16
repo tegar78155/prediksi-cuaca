@@ -1,0 +1,259 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Temperature Forecast | LSTM</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+    <div class="dashboard">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-icon">🌡</div>
+                <div>
+                    <h2>TempForecast</h2>
+                    <span>LSTM Prediction System</span>
+                </div>
+            </div>
+
+            <nav>
+                <a href="#dashboard" class="active">▦ Dashboard</a>
+                <a href="#historis">◷ Data Historis</a>
+                <a href="#evaluasi">▤ Evaluasi Model</a>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <p>Machine Learning Project</p>
+                <small>Long Short-Term Memory</small>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content" id="dashboard">
+
+            <header class="topbar">
+                <div>
+                    <p class="subtitle">MACHINE LEARNING DASHBOARD</p>
+                    <h1>Prediksi Suhu Minimum</h1>
+                    <p class="description">
+                        Sistem peramalan suhu menggunakan algoritma LSTM.
+                    </p>
+                </div>
+
+                <div class="status">
+                    <span class="status-dot"></span>
+                    Model LSTM Aktif
+                </div>
+            </header>
+
+            <!-- PREDICTION CARD -->
+            <section class="prediction-card">
+
+                <div>
+                    <span class="card-label">
+                        PREDIKSI SUHU HARI BERIKUTNYA
+                    </span>
+
+                    <h2>{{ prediksi.suhu }} °C</h2>
+
+                    <p>
+                        Tanggal prediksi:
+                        <strong>{{ prediksi.tanggal }}</strong>
+                    </p>
+                </div>
+
+                <div class="weather-icon">🌤️</div>
+
+            </section>
+
+            <!-- METRIC CARDS -->
+            <section class="metrics">
+
+                <div class="metric-card">
+                    <span>Root Mean Squared Error</span>
+                    <h2>2.2295 °C</h2>
+                    <small>RMSE</small>
+                </div>
+
+                <div class="metric-card">
+                    <span>Mean Absolute Error</span>
+                    <h2>1.7522 °C</h2>
+                    <small>MAE</small>
+                </div>
+
+                <div class="metric-card">
+                    <span>Mean Squared Error</span>
+                    <h2>4.9709</h2>
+                    <small>MSE</small>
+                </div>
+
+            </section>
+
+            <!-- HISTORICAL CHART -->
+            <section class="chart-card" id="historis">
+
+                <div class="section-heading">
+                    <div>
+                        <h2>Data Historis Suhu</h2>
+                        <p>Perubahan suhu minimum harian selama 365 hari terakhir.</p>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="historicalChart"></canvas>
+                </div>
+
+            </section>
+
+            <!-- EVALUATION CHART -->
+            <section class="chart-card" id="evaluasi">
+
+                <div class="section-heading">
+                    <div>
+                        <h2>Aktual vs Prediksi LSTM</h2>
+                        <p>Perbandingan hasil prediksi dengan data suhu sebenarnya.</p>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="evaluationChart"></canvas>
+                </div>
+
+            </section>
+
+            <footer>
+                <p>
+                    Temperature Forecast System |
+                    Long Short-Term Memory (LSTM)
+                </p>
+                <small>
+                    Dataset: Daily Minimum Temperatures in Melbourne (1981–1990)
+                </small>
+            </footer>
+
+        </main>
+    </div>
+
+    <!-- CHART JAVASCRIPT -->
+    <script>
+
+        // HISTORICAL DATA
+        fetch("/api/historis")
+            .then(response => response.json())
+            .then(data => {
+
+                new Chart(
+                    document.getElementById("historicalChart"),
+                    {
+                        type: "line",
+
+                        data: {
+                            labels: data.tanggal,
+
+                            datasets: [{
+                                label: "Suhu Minimum (°C)",
+                                data: data.suhu,
+                                borderColor: "#3978e8",
+                                backgroundColor: "rgba(57,120,232,0.10)",
+                                borderWidth: 1.5,
+                                pointRadius: 0,
+                                fill: true,
+                                tension: 0.25
+                            }]
+                        },
+
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+
+                            plugins: {
+                                legend: {
+                                    position: "top"
+                                }
+                            },
+
+                            scales: {
+                                y: {
+                                    title: {
+                                        display: true,
+                                        text: "Suhu (°C)"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                );
+            });
+
+
+        // EVALUATION DATA
+        fetch("/api/evaluasi")
+            .then(response => response.json())
+            .then(data => {
+
+                new Chart(
+                    document.getElementById("evaluationChart"),
+                    {
+                        type: "line",
+
+                        data: {
+                            labels: data.tanggal,
+
+                            datasets: [
+                                {
+                                    label: "Suhu Aktual",
+                                    data: data.aktual,
+                                    borderColor: "#3978e8",
+                                    borderWidth: 1.5,
+                                    pointRadius: 0,
+                                    tension: 0.2
+                                },
+                                {
+                                    label: "Suhu Prediksi LSTM",
+                                    data: data.prediksi,
+                                    borderColor: "#f59e0b",
+                                    borderWidth: 1.5,
+                                    pointRadius: 0,
+                                    tension: 0.2
+                                }
+                            ]
+                        },
+
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+
+                            scales: {
+                                x: {
+                                    ticks: {
+                                        maxTicksLimit: 10
+                                    }
+                                },
+
+                                y: {
+                                    title: {
+                                        display: true,
+                                        text: "Suhu (°C)"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                );
+            });
+
+    </script>
+
+</body>
+</html>
