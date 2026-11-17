@@ -3,9 +3,10 @@ from flask import Flask, render_template, jsonify
 import pandas as pd
 import numpy as np
 import joblib
+from ai_edge_litert.interpreter import Interpreter
+from threading import Lock
 
 from pathlib import Path
-from tensorflow.keras.models import load_model
 
 app = Flask(__name__, static_folder="public", static_url_path="")
 
@@ -15,9 +16,13 @@ app = Flask(__name__, static_folder="public", static_url_path="")
 
 BASE_DIR = Path(__file__).resolve().parent
 
-model = load_model(
-    BASE_DIR / "model" / "model_lstm.keras"
+interpreter = Interpreter(
+    model_path=str(BASE_DIR / "model" / "model_lstm.tflite")
 )
+interpreter.allocate_tensors()
+input_index = interpreter.get_input_details()[0]["index"]
+output_index = interpreter.get_output_details()[0]["index"]
+prediction_lock = Lock()
 
 scaler = joblib.load(
     BASE_DIR / "model" / "scaler.pkl"
@@ -48,12 +53,12 @@ def prediksi_berikutnya():
     )
 
     # Format input LSTM: samples, timesteps, features
-    X = data_scaled.reshape(1, 30, 1)
+    X = data_scaled.reshape(1, 30, 1).astype(np.float32)
 
-    # Prediksi
-    prediksi_scaled = model.predict(
-        X, verbose=0
-    )
+    with prediction_lock:
+        interpreter.set_tensor(input_index, X)
+        interpreter.invoke()
+        prediksi_scaled = interpreter.get_tensor(output_index)
 
     # Kembalikan ke Celsius
     prediksi = scaler.inverse_transform(

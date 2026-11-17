@@ -27,8 +27,16 @@ npx vercel
 npx vercel --prod
 ```
 
-Folder `public/` menyimpan aset statis yang disajikan Vercel, sedangkan `vercel.json` mengecualikan berkas pelatihan dan aset yang tidak dibutuhkan aplikasi saat deployment.
+Folder `public/` menyimpan aset statis yang disajikan Vercel. Aplikasi menggunakan model LiteRT di `model/model_lstm.tflite` untuk inferensi agar tidak perlu memaketkan TensorFlow penuh. `vercel.json` mengecualikan model Keras dan berkas pelatihan yang tidak dibutuhkan saat deployment.
 
-### Catatan ukuran fungsi
+### Melatih ulang model
 
-Aplikasi menggunakan TensorFlow CPU untuk menjalankan model LSTM. Jika build melewati batas fungsi standar Vercel sebesar 500 MB, aktifkan **Large Functions** untuk project/account jika tersedia. Jika fitur itu tidak tersedia pada paket akun, deploy aplikasi ini pada platform yang mendukung container atau ukuran image lebih besar.
+Jika ingin menjalankan ulang preprocessing, training, atau evaluasi, pasang dependensi tambahan lalu ekspor ulang model LiteRT:
+
+```powershell
+python -m pip install -r requirements-training.txt
+python preprocessing.py
+python train_model.py
+python evaluasi.py
+python convert_model.py
+```
