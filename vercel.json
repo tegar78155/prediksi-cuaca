@@ -1,0 +1,8 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "app.py": {
+      "excludeFiles": "{.venv/**,analisis.py,evaluasi.py,preprocessing.py,train_model.py,model/data_preprocessing.npz,hasil_grafik/grafik_*.png,static/**}"
+    }
+  }
+}

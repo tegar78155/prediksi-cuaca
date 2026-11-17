@@ -7,7 +7,7 @@ import joblib
 from pathlib import Path
 from tensorflow.keras.models import load_model
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="public", static_url_path="")
 
 # ==========================================
 # 1. MEMUAT MODEL DAN DATA
