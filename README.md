@@ -27,7 +27,7 @@ npx vercel
 npx vercel --prod
 ```
 
-Folder `public/` menyimpan aset statis yang disajikan Vercel. Aplikasi menggunakan model LiteRT di `model/model_lstm.tflite` untuk inferensi agar tidak perlu memaketkan TensorFlow penuh. `vercel.json` mengecualikan model Keras dan berkas pelatihan yang tidak dibutuhkan saat deployment.
+Folder `public/` menyimpan aset statis yang disajikan Vercel. Aplikasi menggunakan model LiteRT di `model/model_lstm.tflite` dan metadata scaler di `model/scaler.json` agar tidak perlu memaketkan TensorFlow atau scikit-learn saat deployment. `vercel.json` mengecualikan model Keras, pickle scaler, dan berkas pelatihan yang tidak dibutuhkan saat deployment.
 
 ### Melatih ulang model
 

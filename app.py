@@ -1,12 +1,12 @@
 
-from flask import Flask, render_template, jsonify
-import pandas as pd
-import numpy as np
-import joblib
-from ai_edge_litert.interpreter import Interpreter
+import json
+from pathlib import Path
 from threading import Lock
 
-from pathlib import Path
+import numpy as np
+import pandas as pd
+from ai_edge_litert.interpreter import Interpreter
+from flask import Flask, jsonify, render_template
 
 app = Flask(__name__, static_folder="public", static_url_path="")
 
@@ -24,9 +24,8 @@ input_index = interpreter.get_input_details()[0]["index"]
 output_index = interpreter.get_output_details()[0]["index"]
 prediction_lock = Lock()
 
-scaler = joblib.load(
-    BASE_DIR / "model" / "scaler.pkl"
-)
+with (BASE_DIR / "model" / "scaler.json").open(encoding="utf-8") as file:
+    scaler = json.load(file)
 
 df = pd.read_csv(
     BASE_DIR / "dataset" / "daily-min-temperatures.csv"
@@ -47,9 +46,8 @@ def prediksi_berikutnya():
     # Ambil 30 suhu terakhir
     data_terakhir = df["Temp"].tail(30).values
 
-    # Normalisasi menggunakan scaler training
-    data_scaled = scaler.transform(
-        data_terakhir.reshape(-1, 1)
+    data_scaled = (
+        data_terakhir.reshape(-1, 1) * scaler["scale"] + scaler["min"]
     )
 
     # Format input LSTM: samples, timesteps, features
@@ -61,8 +59,8 @@ def prediksi_berikutnya():
         prediksi_scaled = interpreter.get_tensor(output_index)
 
     # Kembalikan ke Celsius
-    prediksi = scaler.inverse_transform(
-        prediksi_scaled
+    prediksi = (
+        (prediksi_scaled - scaler["min"]) / scaler["scale"]
     )[0][0]
 
     tanggal_terakhir = df["Date"].max()

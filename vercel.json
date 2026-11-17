@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
     "app.py": {
-      "excludeFiles": "{.venv/**,analisis.py,convert_model.py,evaluasi.py,preprocessing.py,train_model.py,requirements-training.txt,model/data_preprocessing.npz,model/model_lstm.keras,hasil_grafik/grafik_*.png,static/**}"
+      "excludeFiles": "{.venv/**,analisis.py,convert_model.py,evaluasi.py,preprocessing.py,train_model.py,requirements-training.txt,model/data_preprocessing.npz,model/model_lstm.keras,model/scaler.pkl,hasil_grafik/grafik_*.png,static/**}"
     }
   }
 }
